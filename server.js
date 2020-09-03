@@ -20,11 +20,11 @@ connection.connect(function (err) {
   runMenu();
 });
 
-let currentRoles = [];
+const currentRoles = [];
 
-let currentEmployees = [];
+const currentEmployees = [];
 
-let employeeNamesArr = [];
+const employeeNamesArr = [];
 
 function getCurrentRoles() {
     connection.query("SELECT * FROM role", function(err, res) {
@@ -38,25 +38,16 @@ function getCurrentRoles() {
     })
 }
 
-function getCurrentEmployees() {
+function getCurrentEmployeeNames() {
     connection.query("SELECT * FROM employee", function(err, res) {
         if (err) throw err;
         for (var i = 0; i < res.length; i++) {
-            let employee = res[i];
-            if (!currentEmployees.includes(employee)) {
-                currentEmployees.push(employee);
+            let employee = res[i].first_name + " " + res[i].last_name;
+            if (!employeeNamesArr.includes(employee)) {
+                employeeNamesArr.push(employee);
             }
         }
     })
-}
-
-function getEmployeeNames() {
-    for (var i = 0; i < currentEmployees.length; i++) {
-        let employeeName = res[i].first_name + " " + res[i].last_name;
-        if (!employeeNamesArr.includes(employeeName)) {
-            employeeNamesArr.push(employeeName);
-        }
-    }
 }
 
 function runMenu() {
@@ -103,10 +94,9 @@ function runMenu() {
 
 function addEmployee() {
     getCurrentRoles();
-    getCurrentEmployees();
-    getEmployeeNames();
+    getCurrentEmployeeNames();
     inquirer
-        .prompt({
+        .prompt([{
             name: "firstName",
             type: "input",
             message: "What is the employee's first name?"
@@ -126,8 +116,8 @@ function addEmployee() {
             name: "manager",
             type: "list",
             message: "Who is the employee's manager?",
-            choices: currentEmployees
-        }).then(function(res) {
+            choices: employeeNamesArr
+        }]).then(function(res) {
             console.log(res);
         })
 }
