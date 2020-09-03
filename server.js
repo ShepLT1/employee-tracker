@@ -20,6 +20,45 @@ connection.connect(function (err) {
   runMenu();
 });
 
+let currentRoles = [];
+
+let currentEmployees = [];
+
+let employeeNamesArr = [];
+
+function getCurrentRoles() {
+    connection.query("SELECT * FROM role", function(err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++) {
+            let role = res[i].title;
+            if (!currentRoles.includes(role)) {
+                currentRoles.push(role);
+            }
+        }
+    })
+}
+
+function getCurrentEmployees() {
+    connection.query("SELECT * FROM employee", function(err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++) {
+            let employee = res[i];
+            if (!currentEmployees.includes(employee)) {
+                currentEmployees.push(employee);
+            }
+        }
+    })
+}
+
+function getEmployeeNames() {
+    for (var i = 0; i < currentEmployees.length; i++) {
+        let employeeName = res[i].first_name + " " + res[i].last_name;
+        if (!employeeNamesArr.includes(employeeName)) {
+            employeeNamesArr.push(employeeName);
+        }
+    }
+}
+
 function runMenu() {
     inquirer   
         .prompt({
@@ -47,7 +86,7 @@ function runMenu() {
                     // run view employees by role function
                     break;
                 case "Add employee":
-                    // run add employees function
+                    addEmployee();
                     break;
                 case "Add department":
                     // run add department function
@@ -61,4 +100,35 @@ function runMenu() {
             }
         })
 };
+
+function addEmployee() {
+    getCurrentRoles();
+    getCurrentEmployees();
+    getEmployeeNames();
+    inquirer
+        .prompt({
+            name: "firstName",
+            type: "input",
+            message: "What is the employee's first name?"
+        },
+        {
+            name: "lastName",
+            type: "input",
+            message: "What is the employee's last name?"
+        },
+        {
+            name: "role",
+            type: "list",
+            message: "What is the employee's role?",
+            choices: currentRoles
+        },
+        {
+            name: "manager",
+            type: "list",
+            message: "Who is the employee's manager?",
+            choices: currentEmployees
+        }).then(function(res) {
+            console.log(res);
+        })
+}
 
