@@ -1,24 +1,50 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const prompts = require('./prompts');
+const db = require('./db');
 
-const connection = mysql.createConnection({
-  host: 'localhost',
+function updateManager(arr) {
+    for (var i = 0; i < arr.length; i++) {
 
-  // Your port; if not 3306
-  port: 3306,
+        let manager = arr[i].Manager;
 
-  // Your username
-  user: 'root',
+        for (var j = 0; j < arr.length; j++) {
+            if (arr[j].ID === manager) {
+                arr[i].Manager = arr[j].First + " " + arr[j].Last;
+            }
+        }
+    }
+}
 
-  // Your password
-  password: 'Huskies7',
-  database: 'employees_db'
-});
+async function viewEmployees() {
+    const employees = await db.viewEmployees();
 
-connection.connect(function (err) {
-  if (err) throw err;
-  runMenu();
-});
+    updateManager(employees);
+
+    console.log('\n');
+    console.table(employees);
+    console.log('\n');
+
+    setTimeout(function() {
+        runMenu()
+    }, 1000);
+}
+
+async function viewDepartment() {
+    const department = await db.viewDepartment();
+
+    updateManager(department);
+
+    console.log('\n');
+    console.table(department);
+    console.log('\n');
+
+    setTimeout(function() {
+        runMenu()
+    }, 1000);
+}
+
+runMenu();
 
 const currentRoles = [];
 
@@ -50,6 +76,23 @@ function getCurrentEmployeeNames() {
     })
 }
 
+function getRoleID(answer) {
+    connection.query("SELECT * FROM role WHERE title = ?", [answer.role], function(err, response) {
+        if (err) throw err;
+        console.log(response[0].id);
+        roleID = response[0].id;
+    })
+}
+
+function getManagerID(answer) {
+    manager = answer.manager.split(" ");
+
+    connection.query("SELECT * FROM employee WHERE first_name = ? AND last_name = ?", [manager[0], manager[1]], function(err, response) {
+        if (err) throw err;
+        managerID = response[0].id;
+    })
+}
+
 function runMenu() {
     inquirer   
         .prompt({
@@ -68,10 +111,10 @@ function runMenu() {
         }).then( function(answer) {
             switch (answer.menuChoice) {
                 case "View all employees":
-                    // run view employees function
+                    viewEmployees();
                     break;
                 case "View employees by department":
-                    // run view employees by department function
+                    viewDepartment();
                     break;
                 case "View employees by role":
                     // run view employees by role function
@@ -118,7 +161,20 @@ function addEmployee() {
             message: "Who is the employee's manager?",
             choices: employeeNamesArr
         }]).then(function(res) {
-            console.log(res);
+
+            const roleID = getRoleID(res);
+            const managerID = getManagerID(res);
+
+            setTimeout(function() {
+                const query = connection.query("INSERT INTO employee SET ?",
+                    {
+                        first_name: res.firstName,
+                        last_name: res.lastName,
+                        role_id: roleID,
+                        manager_id: managerID
+                    })
+                console.log(query.sql);
+            }, 2000);
         })
 }
 
