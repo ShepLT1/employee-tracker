@@ -44,6 +44,20 @@ async function viewDepartment() {
     }, 1000);
 }
 
+async function viewRoles() {
+    const roles = await db.viewRoles();
+
+    updateManager(roles);
+
+    console.log('\n');
+    console.table(roles);
+    console.log('\n');
+
+    setTimeout(function() {
+        runMenu()
+    }, 1000);
+}
+
 runMenu();
 
 const currentRoles = [];
@@ -117,7 +131,7 @@ function runMenu() {
                     viewDepartment();
                     break;
                 case "View employees by role":
-                    // run view employees by role function
+                    viewRoles();
                     break;
                 case "Add employee":
                     addEmployee();
