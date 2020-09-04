@@ -3,14 +3,16 @@ const inquirer = require('inquirer');
 const prompts = require('./prompts');
 const db = require('./db');
 
-function updateManager(arr) {
+async function updateManager(arr) {
+    const staff = await db.viewEmployees();
+
     for (var i = 0; i < arr.length; i++) {
 
         let manager = arr[i].Manager;
 
-        for (var j = 0; j < arr.length; j++) {
-            if (arr[j].ID === manager) {
-                arr[i].Manager = arr[j].First + " " + arr[j].Last;
+        for (var j = 0; j < staff.length; j++) {
+            if (staff[j].ID === manager) {
+                arr[i].Manager = staff[j].First + " " + staff[j].Last;
             }
         }
     }
@@ -19,7 +21,7 @@ function updateManager(arr) {
 async function viewEmployees() {
     const employees = await db.viewEmployees();
 
-    updateManager(employees);
+    await updateManager(employees);
 
     console.log('\n');
     console.table(employees);
@@ -33,7 +35,7 @@ async function viewEmployees() {
 async function viewDepartment() {
     const department = await db.viewDepartment();
 
-    updateManager(department);
+    await updateManager(department);
 
     console.log('\n');
     console.table(department);
@@ -47,7 +49,7 @@ async function viewDepartment() {
 async function viewRoles() {
     const roles = await db.viewRoles();
 
-    updateManager(roles);
+    await updateManager(roles);
 
     console.log('\n');
     console.table(roles);
