@@ -153,6 +153,17 @@ async function getDepartments() {
     }
 }
 
+function addDepartmentQuestions() {
+    inquirer
+        .prompt([{
+            name: "departmentName",
+            type: "input",
+            message: "Please enter the name of the department you wish to add."
+        }]).then(function(res) {
+            addDepartment(res.departmentName);
+        })
+}
+
 function runMenu() {
     inquirer   
         .prompt({
@@ -177,13 +188,13 @@ function runMenu() {
                     viewDepartmentQuestions();
                     break;
                 case "View employees by role":
-                    viewRole();
+                    viewRoleQuestions();
                     break;
                 case "Add employee":
                     addEmployeeQuestions();
                     break;
                 case "Add department":
-                    addDepartment();
+                    addDepartmentQuestions();
                     break;
                 case "Add role":
                     addRole();
@@ -237,8 +248,21 @@ async function viewDepartmentQuestions() {
             type: "list",
             message: "Which department would you like to view?",
             choices: departmentNamesArr
-        }]).then( async function(res) {
+        }]).then(function(res) {
             viewDepartment(res.department);
+        })
+}
+
+async function viewRoleQuestions() {
+    await getRoles();
+    inquirer
+        .prompt([{
+            name: "role",
+            type: "list",
+            message: "Which role would you like to view?",
+            choices: currentRoles
+        }]).then(function(res) {
+            viewRole(res.role);
         })
 }
 
