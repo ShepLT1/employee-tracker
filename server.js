@@ -120,7 +120,6 @@ async function getRoles() {
 async function getRoleID(res) {
     const roleID = await db.getRoleID(res);
     role = roleID[0].id;
-    console.log(roleID);
 }
 
 async function convertManagerToId(res) {
@@ -129,6 +128,11 @@ async function convertManagerToId(res) {
     let manLast = splitManArr[1];
     const managerID = await db.getManager(manFirst, manLast);
     manager = managerID[0].id;
+}
+
+async function getDeptID(res) {
+    const deptIDArr = await db.getDeptID(res);
+    deptID = deptIDArr[0].id;
 }
 
 async function getEmployeeNames() {
@@ -161,6 +165,29 @@ function addDepartmentQuestions() {
             message: "Please enter the name of the department you wish to add."
         }]).then(function(res) {
             addDepartment(res.departmentName);
+        })
+}
+
+async function addRoleQuestions() {
+    await getDepartments();
+    inquirer
+        .prompt([{
+            name: "roleTitle",
+            type: "input",
+            message: "What is the title of the new role?"
+        }, {
+            name: "salary",
+            type: "input",
+            message: "What is the annual salary for this role?"
+        }, {
+            name: "department",
+            type: "list",
+            message: "Which department is this role within?",
+            choices: departmentNamesArr
+        }]).then(async function(res) {
+            await getDeptID(res.department)
+
+            addRole(res.roleTitle, res.salary, deptID);
         })
 }
 
@@ -197,7 +224,7 @@ function runMenu() {
                     addDepartmentQuestions();
                     break;
                 case "Add role":
-                    addRole();
+                    addRoleQuestions();
                     break;
                 case "Update role of an employee":
                     updateRole();

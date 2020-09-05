@@ -195,6 +195,19 @@ class DB {
             `, [role]
         )
     }
+
+    getDeptID(dept) {
+        return this.connection.query(
+            `
+            SELECT
+                department.id
+            FROM
+                department
+            WHERE
+                department.dep_name = ?
+            `, [dept]
+        )
+    }
 }
 
 module.exports = new DB(connection);
