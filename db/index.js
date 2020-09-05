@@ -28,7 +28,7 @@ class DB {
         );
     }
 
-    viewDepartment() {
+    viewDepartment(dept) {
         return this.connection.query(
             `
             SELECT
@@ -48,11 +48,11 @@ class DB {
                 department.dep_name = ?
             ORDER BY
                 employee.id
-            `, ["Sales"]
+            `, [dept]
         )
     }
 
-    viewRoles() {
+    viewRole(role) {
         return this.connection.query(
             `
             SELECT
@@ -72,7 +72,116 @@ class DB {
                 role.title = ?
             ORDER BY
                 employee.id
-            `, ["Engineer"]
+            `, [role]
+        )
+    }
+
+    addEmployee(first, last, role, man) {
+        return this.connection.query(
+            `
+            INSERT INTO
+                employee
+            SET
+                ?
+            `, {
+                first_name: first,
+                last_name: last,
+                role_id: role,
+                manager_id: man
+            }
+        )
+    }
+
+    addDepartment(dept) {
+        return this.connection.query(
+            `
+            INSERT INTO
+                department
+            SET
+                ?
+            `, {
+                dep_name: dept
+            }
+        )
+    }
+
+    addRole(title, sal, dept) {
+        return this.connection.query(
+            `
+            INSERT INTO
+                role
+            SET
+                ?
+            `, {
+                title: title,
+                salary: sal,
+                dep_id: dept
+            }
+        )
+    }
+
+    updateRole(role, empId) {
+        return this.connection.query(
+            `
+            UPDATE
+                employee
+            SET
+                ?
+            WHERE
+                ?
+            `, [{
+                role_id: role
+            }, {
+                id: empId
+            }]
+        )
+    }
+
+    getRoles() {
+        return this.connection.query(
+            `
+            SELECT
+                *
+            FROM
+                role
+            `
+        )
+    }
+
+    getEmployees() {
+        return this.connection.query(
+            `
+            SELECT
+                *
+            FROM
+                employee
+            `
+        )
+    }
+
+    getManager(first, last) {
+        return this.connection.query(
+            `
+            SELECT
+                employee.id
+            FROM
+                employee
+            WHERE
+                employee.first_name = ? AND employee.last_name = ?
+            `, [first, last]
+        )
+    }
+
+    getRoleID(role) {
+        return this.connection.query(
+            `
+            SELECT
+                role.id
+            FROM
+                role
+            WHERE
+                role.title = ?
+            `, [role]
         )
     }
 }

@@ -18,6 +18,12 @@ async function updateManager(arr) {
     }
 }
 
+function delayMenu() {
+    setTimeout(function() {
+        runMenu()
+    }, 1000);
+}
+
 async function viewEmployees() {
     const employees = await db.viewEmployees();
 
@@ -27,13 +33,11 @@ async function viewEmployees() {
     console.table(employees);
     console.log('\n');
 
-    setTimeout(function() {
-        runMenu()
-    }, 1000);
+    delayMenu();
 }
 
-async function viewDepartment() {
-    const department = await db.viewDepartment();
+async function viewDepartment(dept) {
+    const department = await db.viewDepartment(dept);
 
     await updateManager(department);
 
@@ -41,13 +45,11 @@ async function viewDepartment() {
     console.table(department);
     console.log('\n');
 
-    setTimeout(function() {
-        runMenu()
-    }, 1000);
+    delayMenu();
 }
 
-async function viewRoles() {
-    const roles = await db.viewRoles();
+async function viewRole(role) {
+    const roles = await db.viewRole(role);
 
     await updateManager(roles);
 
@@ -55,58 +57,87 @@ async function viewRoles() {
     console.table(roles);
     console.log('\n');
 
-    setTimeout(function() {
-        runMenu()
-    }, 1000);
+    delayMenu();
+}
+
+async function addEmployee(first, last, role, man) {
+    await db.addEmployee(first, last, role, man);
+
+    viewEmployees();
+}
+
+async function addDepartment(dept) {
+    await db.addDepartment(dept);
+
+    console.log('\n');
+    console.log("New Department Succesfully Added!");
+    console.log('\n');
+
+    delayMenu();
+}
+
+async function addRole(title, sal, dept) {
+    await db.addRole(title, sal, dept);
+
+    console.log('\n');
+    console.log("New Role Succesfully Added!");
+    console.log('\n');
+
+    delayMenu();
+}
+
+async function updateRole(role, empId) {
+    await db.updateRole(role, empId);
+
+    console.log('\n');
+    console.log("Role Succesfully Updated!");
+    console.log('\n');
+
+    delayMenu();
 }
 
 runMenu();
 
 const currentRoles = [];
 
-const currentEmployees = [];
-
 const employeeNamesArr = [];
 
-function getCurrentRoles() {
-    connection.query("SELECT * FROM role", function(err, res) {
-        if (err) throw err;
-        for (var i = 0; i < res.length; i++) {
-            let role = res[i].title;
-            if (!currentRoles.includes(role)) {
-                currentRoles.push(role);
-            }
+async function getRolesArr() {
+    const allRoles =  await db.getRoles()
+        
+    for (var i = 0; i < allRoles.length; i++) {
+
+        let role = allRoles[i].title;
+
+        if (!currentRoles.includes(role)) {
+            currentRoles.push(role);
         }
-    })
+    }
 }
 
-function getCurrentEmployeeNames() {
-    connection.query("SELECT * FROM employee", function(err, res) {
-        if (err) throw err;
-        for (var i = 0; i < res.length; i++) {
-            let employee = res[i].first_name + " " + res[i].last_name;
-            if (!employeeNamesArr.includes(employee)) {
-                employeeNamesArr.push(employee);
-            }
+async function getRoleID(res) {
+    const roleID = await db.getRoleID(res);
+    role = roleID[0].id;
+    console.log(roleID);
+}
+
+async function convertManagerToId(res) {
+    let splitManArr = res.split(" ");
+    let manFirst = splitManArr[0];
+    let manLast = splitManArr[1];
+    const managerID = await db.getManager(manFirst, manLast);
+    manager = managerID[0].id;
+}
+
+async function getEmployeeNamesArr() {
+    const employeeArr = await db.getEmployees();
+        
+    for (var i = 0; i < employeeArr.length; i++) {
+        let employee = employeeArr[i].first_name + " " + employeeArr[i].last_name;
+        if (!employeeNamesArr.includes(employee)) {
+            employeeNamesArr.push(employee);
         }
-    })
-}
-
-function getRoleID(answer) {
-    connection.query("SELECT * FROM role WHERE title = ?", [answer.role], function(err, response) {
-        if (err) throw err;
-        console.log(response[0].id);
-        roleID = response[0].id;
-    })
-}
-
-function getManagerID(answer) {
-    manager = answer.manager.split(" ");
-
-    connection.query("SELECT * FROM employee WHERE first_name = ? AND last_name = ?", [manager[0], manager[1]], function(err, response) {
-        if (err) throw err;
-        managerID = response[0].id;
-    })
+    }
 }
 
 function runMenu() {
@@ -133,27 +164,27 @@ function runMenu() {
                     viewDepartment();
                     break;
                 case "View employees by role":
-                    viewRoles();
+                    viewRole();
                     break;
                 case "Add employee":
-                    addEmployee();
+                    addEmployeeQuestions();
                     break;
                 case "Add department":
-                    // run add department function
+                    addDepartment();
                     break;
                 case "Add role":
-                    // run add role function
+                    addRole();
                     break;
                 case "Update role of an employee":
-                    // run update employees role function
+                    updateRole();
                     break;
             }
         })
 };
 
-function addEmployee() {
-    getCurrentRoles();
-    getCurrentEmployeeNames();
+async function addEmployeeQuestions() {
+    await getRolesArr();
+    await getEmployeeNamesArr();
     inquirer
         .prompt([{
             name: "firstName",
@@ -176,21 +207,14 @@ function addEmployee() {
             type: "list",
             message: "Who is the employee's manager?",
             choices: employeeNamesArr
-        }]).then(function(res) {
+        }]).then( async function(res) {
 
-            const roleID = getRoleID(res);
-            const managerID = getManagerID(res);
+            await getRoleID(res.role);
+            await convertManagerToId(res.manager);
 
-            setTimeout(function() {
-                const query = connection.query("INSERT INTO employee SET ?",
-                    {
-                        first_name: res.firstName,
-                        last_name: res.lastName,
-                        role_id: roleID,
-                        manager_id: managerID
-                    })
-                console.log(query.sql);
-            }, 2000);
+            // role is undefined here
+
+            addEmployee(res.firstName, res.lastName, role, manager);
         })
 }
 
