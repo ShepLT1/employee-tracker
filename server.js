@@ -102,7 +102,9 @@ const currentRoles = [];
 
 const employeeNamesArr = [];
 
-async function getRolesArr() {
+const departmentNamesArr = [];
+
+async function getRoles() {
     const allRoles =  await db.getRoles()
         
     for (var i = 0; i < allRoles.length; i++) {
@@ -129,13 +131,24 @@ async function convertManagerToId(res) {
     manager = managerID[0].id;
 }
 
-async function getEmployeeNamesArr() {
+async function getEmployeeNames() {
     const employeeArr = await db.getEmployees();
         
     for (var i = 0; i < employeeArr.length; i++) {
         let employee = employeeArr[i].first_name + " " + employeeArr[i].last_name;
         if (!employeeNamesArr.includes(employee)) {
             employeeNamesArr.push(employee);
+        }
+    }
+}
+
+async function getDepartments() {
+    const deptArr = await db.getDepartments();
+
+    for (var i = 0; i < deptArr.length; i++) {
+        let deptName = deptArr[i].dep_name;
+        if (!departmentNamesArr.includes(deptName)) {
+            departmentNamesArr.push(deptName);
         }
     }
 }
@@ -161,7 +174,7 @@ function runMenu() {
                     viewEmployees();
                     break;
                 case "View employees by department":
-                    viewDepartment();
+                    viewDepartmentQuestions();
                     break;
                 case "View employees by role":
                     viewRole();
@@ -183,8 +196,8 @@ function runMenu() {
 };
 
 async function addEmployeeQuestions() {
-    await getRolesArr();
-    await getEmployeeNamesArr();
+    await getRoles();
+    await getEmployeeNames();
     inquirer
         .prompt([{
             name: "firstName",
@@ -212,9 +225,20 @@ async function addEmployeeQuestions() {
             await getRoleID(res.role);
             await convertManagerToId(res.manager);
 
-            // role is undefined here
-
             addEmployee(res.firstName, res.lastName, role, manager);
+        })
+}
+
+async function viewDepartmentQuestions() {
+    await getDepartments();
+    inquirer
+        .prompt([{
+            name: "department",
+            type: "list",
+            message: "Which department would you like to view?",
+            choices: departmentNamesArr
+        }]).then( async function(res) {
+            viewDepartment(res.department);
         })
 }
 

@@ -159,6 +159,17 @@ class DB {
         )
     }
 
+    getDepartments() {
+        return this.connection.query(
+            `
+            SELECT
+                *
+            FROM
+                department
+            `
+        )
+    }
+
     getManager(first, last) {
         return this.connection.query(
             `
