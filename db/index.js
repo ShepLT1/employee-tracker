@@ -170,7 +170,7 @@ class DB {
         )
     }
 
-    getManager(first, last) {
+    getEmployeeID(first, last) {
         return this.connection.query(
             `
             SELECT
@@ -206,6 +206,20 @@ class DB {
             WHERE
                 department.dep_name = ?
             `, [dept]
+        )
+    }
+
+    updateRole(role, emp) {
+        return this.connection.query(
+            `
+            UPDATE
+                employee
+            SET
+                employee.role_id = ?
+            WHERE
+                employee.id = ?
+
+            `, [role, emp]
         )
     }
 }

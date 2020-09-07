@@ -122,12 +122,12 @@ async function getRoleID(res) {
     role = roleID[0].id;
 }
 
-async function convertManagerToId(res) {
-    let splitManArr = res.split(" ");
-    let manFirst = splitManArr[0];
-    let manLast = splitManArr[1];
-    const managerID = await db.getManager(manFirst, manLast);
-    manager = managerID[0].id;
+async function getEmployeeID(res) {
+    let splitEmpArr = res.split(" ");
+    let empFirst = splitEmpArr[0];
+    let empLast = splitEmpArr[1];
+    const employeeID = await db.getEmployeeID(empFirst, empLast);
+    employee = employeeID[0].id;
 }
 
 async function getDeptID(res) {
@@ -155,6 +155,11 @@ async function getDepartments() {
             departmentNamesArr.push(deptName);
         }
     }
+}
+
+async function updateRole(role, emp) {
+    await db.updateRole(role, emp);
+    viewEmployees();
 }
 
 function addDepartmentQuestions() {
@@ -227,7 +232,7 @@ function runMenu() {
                     addRoleQuestions();
                     break;
                 case "Update role of an employee":
-                    updateRole();
+                    updateRoleQuestions();
                     break;
             }
         })
@@ -261,9 +266,9 @@ async function addEmployeeQuestions() {
         }]).then( async function(res) {
 
             await getRoleID(res.role);
-            await convertManagerToId(res.manager);
+            await getEmployeeID(res.manager);
 
-            addEmployee(res.firstName, res.lastName, role, manager);
+            addEmployee(res.firstName, res.lastName, role, employee);
         })
 }
 
@@ -291,5 +296,27 @@ async function viewRoleQuestions() {
         }]).then(function(res) {
             viewRole(res.role);
         })
+}
+
+async function updateRoleQuestions() {
+    await getRoles();
+    await getEmployeeNames();
+    inquirer
+        .prompt([{
+            name: "employee",
+            type: "list",
+            message: "Which employee would you like to update?",
+            choices: employeeNamesArr
+        }, {
+            name: "newRole",
+            type: "list",
+            message: "What is this empolyee's new role?",
+            choices: currentRoles
+        }]).then(async function(res) {
+            await getRoleID(res.newRole);
+            await getEmployeeID(res.employee);
+            updateRole(role, employee);
+        })
+
 }
 
