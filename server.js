@@ -1,7 +1,9 @@
-const mysql = require('mysql');
 const inquirer = require('inquirer');
-const prompts = require('./prompts');
 const db = require('./db');
+
+let currentRoles;
+let employeeNamesArr;
+let departmentNamesArr;
 
 async function updateManager(arr) {
     const staff = await db.viewEmployees();
@@ -96,25 +98,12 @@ async function updateRole(role, empId) {
     delayMenu();
 }
 
-runMenu();
-
-const currentRoles = [];
-
-const employeeNamesArr = [];
-
-const departmentNamesArr = [];
-
 async function getRoles() {
-    const allRoles =  await db.getRoles()
+    const allRoles =  await db.getRoles();
         
-    for (var i = 0; i < allRoles.length; i++) {
-
-        let role = allRoles[i].title;
-
-        if (!currentRoles.includes(role)) {
-            currentRoles.push(role);
-        }
-    }
+    currentRoles = allRoles.map(({ title }) => ({
+        name: title
+      }));
 }
 
 async function getRoleID(res) {
@@ -138,23 +127,17 @@ async function getDeptID(res) {
 async function getEmployeeNames() {
     const employeeArr = await db.getEmployees();
         
-    for (var i = 0; i < employeeArr.length; i++) {
-        let employee = employeeArr[i].first_name + " " + employeeArr[i].last_name;
-        if (!employeeNamesArr.includes(employee)) {
-            employeeNamesArr.push(employee);
-        }
-    }
+    employeeNamesArr = employeeArr.map(({ first_name, last_name }) => ({
+        name: `${first_name} ${last_name}`
+      }));
 }
 
 async function getDepartments() {
     const deptArr = await db.getDepartments();
 
-    for (var i = 0; i < deptArr.length; i++) {
-        let deptName = deptArr[i].dep_name;
-        if (!departmentNamesArr.includes(deptName)) {
-            departmentNamesArr.push(deptName);
-        }
-    }
+    departmentNamesArr = deptArr.map(({ dep_name }) => ({
+        name: dep_name
+      }));
 }
 
 async function updateRole(role, emp) {
@@ -195,48 +178,6 @@ async function addRoleQuestions() {
             addRole(res.roleTitle, res.salary, deptID);
         })
 }
-
-function runMenu() {
-    inquirer   
-        .prompt({
-            name: "menuChoice",
-            type: "rawlist",
-            message: "What would you like to do?",
-            choices: [
-                "View all employees",
-                "View employees by department",
-                "View employees by role",
-                "Add employee",
-                "Add department",
-                "Add role",
-                "Update role of an employee"
-            ]
-        }).then( function(answer) {
-            switch (answer.menuChoice) {
-                case "View all employees":
-                    viewEmployees();
-                    break;
-                case "View employees by department":
-                    viewDepartmentQuestions();
-                    break;
-                case "View employees by role":
-                    viewRoleQuestions();
-                    break;
-                case "Add employee":
-                    addEmployeeQuestions();
-                    break;
-                case "Add department":
-                    addDepartmentQuestions();
-                    break;
-                case "Add role":
-                    addRoleQuestions();
-                    break;
-                case "Update role of an employee":
-                    updateRoleQuestions();
-                    break;
-            }
-        })
-};
 
 async function addEmployeeQuestions() {
     await getRoles();
@@ -319,4 +260,48 @@ async function updateRoleQuestions() {
         })
 
 }
+
+function runMenu() {
+    inquirer   
+        .prompt({
+            name: "menuChoice",
+            type: "rawlist",
+            message: "What would you like to do?",
+            choices: [
+                "View all employees",
+                "View employees by department",
+                "View employees by role",
+                "Add employee",
+                "Add department",
+                "Add role",
+                "Update role of an employee"
+            ]
+        }).then( function(answer) {
+            switch (answer.menuChoice) {
+                case "View all employees":
+                    viewEmployees();
+                    break;
+                case "View employees by department":
+                    viewDepartmentQuestions();
+                    break;
+                case "View employees by role":
+                    viewRoleQuestions();
+                    break;
+                case "Add employee":
+                    addEmployeeQuestions();
+                    break;
+                case "Add department":
+                    addDepartmentQuestions();
+                    break;
+                case "Add role":
+                    addRoleQuestions();
+                    break;
+                case "Update role of an employee":
+                    updateRoleQuestions();
+                    break;
+            }
+        })
+};
+
+runMenu();
 

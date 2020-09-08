@@ -141,7 +141,7 @@ class DB {
         return this.connection.query(
             `
             SELECT
-                *
+                role.title
             FROM
                 role
             `
@@ -152,7 +152,8 @@ class DB {
         return this.connection.query(
             `
             SELECT
-                *
+                employee.first_name,
+                employee.last_name
             FROM
                 employee
             `
@@ -163,7 +164,7 @@ class DB {
         return this.connection.query(
             `
             SELECT
-                *
+                department.dep_name
             FROM
                 department
             `
