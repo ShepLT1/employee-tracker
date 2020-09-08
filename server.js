@@ -23,7 +23,7 @@ async function updateManager(arr) {
 function delayMenu() {
     setTimeout(function() {
         runMenu()
-    }, 1000);
+    }, 500);
 }
 
 async function viewEmployees() {
@@ -112,11 +112,15 @@ async function getRoleID(res) {
 }
 
 async function getEmployeeID(res) {
-    let splitEmpArr = res.split(" ");
-    let empFirst = splitEmpArr[0];
-    let empLast = splitEmpArr[1];
-    const employeeID = await db.getEmployeeID(empFirst, empLast);
-    employee = employeeID[0].id;
+    if (res === "None") {
+        employee = null;
+    } else {
+        let splitEmpArr = res.split(" ");
+        let empFirst = splitEmpArr[0];
+        let empLast = splitEmpArr[1];
+        const employeeID = await db.getEmployeeID(empFirst, empLast);
+        employee = employeeID[0].id;
+    }
 }
 
 async function getDeptID(res) {
@@ -130,6 +134,10 @@ async function getEmployeeNames() {
     employeeNamesArr = employeeArr.map(({ first_name, last_name }) => ({
         name: `${first_name} ${last_name}`
       }));
+}
+
+function addNullManager() {
+    employeeNamesArr.push("None");
 }
 
 async function getDepartments() {
@@ -182,6 +190,7 @@ async function addRoleQuestions() {
 async function addEmployeeQuestions() {
     await getRoles();
     await getEmployeeNames();
+    addNullManager();
     inquirer
         .prompt([{
             name: "firstName",
